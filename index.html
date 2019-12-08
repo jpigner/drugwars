@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Drugwars: Drugwars ist ein rundenbasiertes Strategie-Computerspiel, in dem der Spieler die Rolle eines in Arbitrage verwickelten Drogendealers einnimmt. Das Ziel des Spiels ist es, die meisten Drogen zu geben, um den
+        Kredithai am Ende des Spiels abzuzahlen und einen Gewinn zu erzielen.">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="images/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="images/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="images/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="images/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="images/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="images/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="images/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="images/favicon/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="images/favicon/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>DrugWars 0.1 Trainee-Edition</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/sweetalert.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <div class="text-light">
+                <div class="container-fluid" id="header">
+                    <div class="row">
+                        <div class="col-sm lead">
+                            {{ gameUI.name }}
+                        </div>
+                        <div class="col-sm align-text-right">
+                            <button type="button" class="btn-sm btn-secondary rounded-0" v-on:click="menu.newGame(playerUI, drugUI)">Spiel Neu
+                                Starten</button>
+                            <button type="button" class="btn-sm btn-secondary rounded-0" v-on:click="menu.saveGame(playerUI)">Spiel
+                                Speichern</button>
+                            <button type="button" class="btn-sm btn-secondary rounded-0" v-on:click="menu.loadGame(playerUI)">Spiel
+                                Laden</button>
+                            <button type="button" class="btn-sm btn-secondary rounded-0" v-on:click="menu.deleteGame()">Spielstand
+                                löschen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main role="main">
+
+            <!-- CITY SECTION -->
+            <section>
+                <div class="collapse section-background show">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- CITY ACTUAL-->
+                            <div class="col-sm-8 col-md-7 py-4">
+                                <br>
+                                <h4 class="text-white display-4">Standort: {{ playerUI.location }}</h4>
+                                <h6 class="text-white lead"> {{ playerUI.quote }}
+                                </h6>
+                            </div>
+                            <!-- SWITCH CITY -->
+                            <div class="col-sm-4 offset-md-1 py-4">
+                                <form class="card p-2 element-margin cityform-margin bg-dark text-light">
+                                    <div class="input-group">
+                                        <select class="custom-select d-block" required
+                                            @change="selectedCityValue($event)" v-model="gameTurnUI.cityName">
+                                            <option value="" selected>Wähle eine Reiseziel...</option>
+                                            <option v-for="city in cityUI.cityList" :value="city.name">Stadt: {{ city.name }}
+                                                <span class="badge text-right"> &gt; Reisepreis: {{ city.price }} €</span>
+                                            </option>
+                                        </select>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-secondary"
+                                                v-on:click="game.travel(playerUI, gameTurnUI, cityUI, gameUI, drugUI, utils); game.gameInteraction(playerUI, interactionUI); game.increaseStep()">Reisen</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar navbar-dark section-bar box-shadow">
+                    <div class="d-flex justify-content-end text-light lead">
+                        <label>Standort</label>
+                    </div>
+                    <div class="d-flex justify-content-start">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#citysection"
+                            aria-controls="citysection" aria-expanded="false" aria-label="Toggle navigation">-
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DRUGS SECTION -->
+            <section>
+                <div class="collapse section-background show" id="drugssection">
+                    <div class="container-fluid">
+                        <div class="row">
+
+                            <!-- DRUG TABLE-->
+                            <div class="col-sm-8 col-md-7 py-4 lead">
+                                <table class="table table-dark table-striped table-sm text-black lead text-center">
+                                    <thead>
+                                        <tr>
+                                            <th>Droge</th>
+                                            <th>Preis (€)</th>
+                                            <th>Verfügbar</th>
+                                            <th>Im Besitz</th>
+                                            <th>Drogenwert (€)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="drug in drugUI.drugList">
+                                            <td>{{ drug.name }}</td>
+                                            <td>{{ drug.price }} €</td>
+                                            <td>{{ drug.available }}</td>
+                                            <td>{{ drug.inventory }}</td>
+                                            <td>{{ drug.total }} €</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- USER INFORMATIONEN-->
+                            <div class="col-sm-4 offset-md-1 py-4">
+                                <div class="card border border-secondary rounded-circle">
+                                    <div class="card-body bg-dark text-light">
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col-sm-8 col-md-7 py-4">
+                                                    <h4 class="text-black lead font-weight-bold">Verbleibende Spielzeit
+                                                    </h4>
+                                                    <h4 class="text-black lead font-weight-bold">Bargeld </h4>
+                                                    <h4 class="text-black lead font-weight-bold" data-toggle="tooltip"
+                                                        data-placement="top" title="Sparzinsen betragen 5,5 % pro Tag">
+                                                        Bank-Guthaben
+                                                    </h4>
+                                                    <h4 class="text-black lead font-weight-bold" data-toggle="tooltip"
+                                                        data-placement="top" title="Schuldzinsen betragen 10 % pro Tag">
+                                                        Kredite </h4>
+                                                    <h4 class="text-black lead font-weight-bold">Bilanz </h4>
+                                                    <h4 class="text-black lead font-weight-bold">Angelegtes Kapital
+                                                    </h4>
+                                                </div>
+                                                <div class="col-sm-4 offset-md-1 py-4">
+                                                    <h4 class="text-black lead font-weight-normal">
+                                                        {{ playerUI.days }}
+                                                    </h4>
+                                                    <h4 class="text-black lead font-weight-normal">
+                                                        {{ playerUI.cash }} €
+                                                    </h4>
+                                                    <h4 class="text-black lead font-weight-normal">
+                                                        {{ playerUI.bank }} €
+                                                    </h4>
+                                                    <h4 class="text-black lead font-weight-normal">
+                                                        {{ playerUI.credit }} € </h4>
+                                                    <h4 class="text-black lead font-weight-normal">
+                                                        {{ playerUI.balance }} €
+                                                    </h4>
+                                                    <h4 class="text-black lead font-weight-normal">
+                                                        {{ playerUI.inventory }} €
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar navbar-dark section-bar box-shadow">
+                    <div class="d-flex justify-content-end text-light lead">
+                        <label>Übersicht</label>
+                    </div>
+                    <div class="d-flex justify-content-start">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#drugssection"
+                            aria-controls="drugssection" aria-expanded="false" aria-label="Toggle navigation">-
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ACTION SECTION -->
+            <section>
+                <div class="collapse section-background show" id="actionsection">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-4 text-white action-navbar">
+                                <!-- BUY DRUGS -->
+                                <form class="card p-2 element-margin bg-dark text-light">
+                                    <div class="input-group">
+                                        <select class="custom-select d-block" required
+                                            @change="selectedDrugValue($event)" v-model="gameTurnUI.drugName">
+                                            <option value="" selected>Wähle eine Droge...</option>
+                                            <option v-for="drug in drugUI.drugList" :value="drug.name">{{ drug.name }}
+                                            </option>
+                                        </select>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-secondary"
+                                                v-on:click="game.increasePieces(gameTurnUI)">+</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                v-on:click="game.minimizePieces(gameTurnUI)">-</button>
+                                            <button type="button" class="btn btn-secondary" v-on:click="game.buyDrug(playerUI, gameTurnUI, drugUI); game.gameInteraction(playerUI, interactionUI); game.increaseStep()"><span
+                                                    class="badge">{{ gameTurnUI.drugPieces }}</span><span>x
+                                                </span>Kaufen</button>
+                                            <button type="button" class="btn btn-secondary" v-on:click="game.sellDrug(playerUI, gameTurnUI, drugUI); game.gameInteraction(playerUI, interactionUI); game.increaseStep()"><span
+                                                    class="badge">{{ gameTurnUI.drugPieces }}</span><span>x
+                                                </span>Verkaufen</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-4 themed-grid-col text-white action-navbar">
+                                <!-- ACTION BANK -->
+                                <form class="card p-2 element-margin bg-dark text-light">
+                                    <div class="input-group">
+                                        <select class="custom-select d-block" required
+                                            @change="selectedBankValue($event)" v-model="gameTurnUI.bankMoney">
+                                            <option value="0" selected>Wähle einen Betrag...</option>
+                                            <option v-for="value in moneyUI.moneyRange" :value="value">{{ value }}</option>
+                                        </select>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-secondary"
+                                                v-on:click="game.withdrawMoney(playerUI, gameTurnUI); game.gameInteraction(playerUI, interactionUI); game.increaseStep()">Abheben</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                v-on:click="game.transferMoney(playerUI, gameTurnUI); game.gameInteraction(playerUI, interactionUI); game.increaseStep()">Einzahlen</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-4 themed-grid-col text-white action-navbar">
+                                <!-- ACTION KREDIT -->
+                                <form class="card p-2 element-margin bg-dark text-light">
+                                    <div class="input-group">
+                                        <select class="custom-select d-block" required
+                                            @change="selectedCreditValue($event)" v-model="gameTurnUI.creditMoney">
+                                            <option value="0" selected>Wähle einen Betrag...</option>
+                                            <option v-for="value in moneyUI.moneyRange" :value="value">{{ value }}</option>
+                                        </select>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-secondary"
+                                                v-on:click="game.lendMoney(playerUI, gameTurnUI); game.gameInteraction(playerUI, interactionUI); game.increaseStep()">Leihen</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                v-on:click="game.payMoney(playerUI, gameTurnUI); game.gameInteraction(playerUI, interactionUI); game.increaseStep()">Zurückzahlen</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar navbar-dark section-bar box-shadow">
+                    <div class="d-flex justify-content-end text-light lead">
+                        <label>Aktionen</label>
+                    </div>
+                    <div class="d-flex justify-content-start">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#actionsection"
+                            aria-controls="actionsection" aria-expanded="false" aria-label="Toggle navigation">-
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</body>
+
+<!-- Bootstrap core JavaScript
+    ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+
+<!-- TOOLTIP SCRIPT-->
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="barzinsen"]').tooltip();
+    });
+</script>
+
+<!-- OWN SCRIPTS-->
+<script src="js/sweetalert-dev.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="vue/utils.js"></script>
+<script src="vue/ui.js"></script>
+<script src="vue/menu.js"></script>
+<script src="vue/game.js"></script>
+<script src="vue/app.js"></script>
+
+</html>
